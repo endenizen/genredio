@@ -8,7 +8,7 @@ Follow the Heroku instructions for setting up your local workstation on this pag
 
 http://devcenter.heroku.com/articles/python
 
-Then you'll need to set two environment variables:
+Then you'll need to set two environment variables to get to the rdio api:
 
 RDIO_API_KEY
 RDIO_API_SECRET
@@ -17,9 +17,23 @@ You get these variables from the Rdio developer site (sign in and create a new a
 
 http://developer.rdio.com/
 
+Additionally, you'll need these variables for the database:
+
+DB_SECRET
+DB_USERNAME
+DB_PASSWORD
+
+And this for the session store:
+
+APP_SECRET
+
 An easy way to set up your vars is to create a file called env.sh and make it look like this:
 
 export RDIO_API_KEY=yourkey
 export RDIO_API_SECRET=yoursecret
+export DB_SECRET=secret
+export DB_USERNAME=username
+export DB_PASSWORD=password
+export APP_SECRET=secret
 
 Then just type "source env.sh" before you run your app locally. Just make sure not to commit your env.sh file.
