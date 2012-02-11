@@ -1,0 +1,25 @@
+Genredio
+
+Radio stations from genres and moods!
+
+Getting started:
+
+Follow the Heroku instructions for setting up your local workstation on this page:
+
+http://devcenter.heroku.com/articles/python
+
+Then you'll need to set two environment variables:
+
+RDIO_API_KEY
+RDIO_API_SECRET
+
+You get these variables from the Rdio developer site (sign in and create a new app):
+
+http://developer.rdio.com/
+
+An easy way to set up your vars is to create a file called env.sh and make it look like this:
+
+export RDIO_API_KEY=yourkey
+export RDIO_API_SECRET=yoursecret
+
+Then just type "source env.sh" before you run your app locally. Just make sure not to commit your env.sh file.
