@@ -1,11 +1,11 @@
 import os
 
-import sqlite3
+#import sqlite3
 from flask import Flask, render_template, url_for, redirect, request, session
 from rdio import Rdio
-from pprint import pprint
+#from pprint import pprint
 
-DATABASE = 'genredio.db'
+#DATABASE = 'genredio.db'
 
 # get env vars
 SECRET_KEY = os.environ.get('DB_SECRET')
