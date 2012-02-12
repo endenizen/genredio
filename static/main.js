@@ -20,6 +20,7 @@ App.prototype.init = function() {
   this.$player = $('#player');
 
   this.$message = $('.message');
+  this.$tracks = $('.tracks');
 
   this.setupPlayer();
 };
@@ -166,6 +167,26 @@ App.prototype.queueIfNeeded = function() {
   this.getPlayer().rdio_queue(this.toQueue.shift());
 };
 
+App.prototype.updateQueueMessage = function(queue) {
+  console.log('updating queue message');
+  var msg = '';
+  var parts = [];
+  if (this.styles['style1']) {
+    parts.push(this.styles['style1']);
+  }
+  if (this.styles['style2']) {
+    parts.push(this.styles['style2']);
+  }
+  if (this.moods['mood1']) {
+    parts.push(this.moods['mood1']);
+  }
+  if (this.moods['mood2']) {
+    parts.push(this.moods['mood2']);
+  }
+  msg = 'now playing ' + queue.length + ' ' + parts.join(' ') + ' tracks.';
+  this.$tracks.text(msg);
+};
+
 App.prototype.getPlayer = function() {
   return $('#apiswf')[0];
 };
@@ -268,6 +289,7 @@ $(document).ready(function() {
       // The queue has changed to newQueue.
       log('queueChanged',arguments);
       app.queueIfNeeded();
+      app.updateQueueMessage(newQueue);
     },
 
     shuffleChanged: function(shuffle) {

@@ -64,7 +64,7 @@ a {
   z-index: 100;
 }
 
-.bottom .logo {
+.bottom .logo, .bottom .tracks {
   -webkit-animation: none;
   background: rgba(100, 30, 0, 0.5);
   border-radius: 200px 200px 0 0;
@@ -76,6 +76,15 @@ a {
   border-color: rgba(100, 30, 0, 0.5);
   border-style: solid;
   box-shadow: inset 0 3px 3px black;
+}
+
+.bottom .tracks {
+  text-align: center;
+  font-size: 10px;
+  width: 140px;
+  padding: 8px 4px 5px;
+  border-radius: 25px 25px 0 0;
+  color: rgba(220, 82, 0, 0.5);
 }
 
 .login {
@@ -178,7 +187,7 @@ a {
 }
 
 #player .art img.reflection {
-  -webkit-transform: perspective(1000px) rotateX(180deg);
+  -webkit-transform: perspective(1000px) rotateX(180deg) translate(0,0);
   -moz-transform: perspective(1000px) rotateX(180deg);
   opacity: .2;
 }
@@ -189,6 +198,7 @@ a {
   font-size: 23px;
   line-height: 42px;
   left: -56px;
+  text-shadow: 0 0 6px black;
 }
 
 .message {
