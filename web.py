@@ -72,14 +72,17 @@ def echonest_search(styles, moods):
   if result:
     return result
   app.logger.error('Hey the method is being called')
-  songs = song.search(
-      style=styles,
-      mood=moods,
-      buckets=['id:rdio-us-streaming'],
-      limit=True,
-      results=100)
-  foreign_ids = [s.get_foreign_id('rdio-us-streaming') for s in songs]
-  keys = [str(f.split(':')[-1]) for f in foreign_ids]
+  try:
+    songs = song.search(
+        style=styles,
+        mood=moods,
+        buckets=['id:rdio-us-streaming'],
+        limit=True,
+        results=100)
+    foreign_ids = [s.get_foreign_id('rdio-us-streaming') for s in songs]
+    keys = [str(f.split(':')[-1]) for f in foreign_ids]
+  except:
+    return []
   cache.set(cache_key, keys, 600)
   return keys
 
