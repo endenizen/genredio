@@ -17,7 +17,11 @@ You get these variables from the Rdio developer site (sign in and create a new a
 
 http://developer.rdio.com/
 
-Additionally, you'll need these variables for the database:
+Additionally, you'll need this variable for the echo nest api:
+
+ECHO_NEST_API_KEY
+
+And these for the db:
 
 DB_SECRET
 DB_USERNAME
@@ -31,6 +35,7 @@ An easy way to set up your vars is to create a file called env.sh and make it lo
 
 export RDIO_API_KEY=yourkey
 export RDIO_API_SECRET=yoursecret
+export ECHO_NEST_API_KEY=yourkey
 export DB_SECRET=secret
 export DB_USERNAME=username
 export DB_PASSWORD=password

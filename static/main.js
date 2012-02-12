@@ -1,3 +1,231 @@
-(function() {
-  console.info('hello!');
-})();
+(function($) {
+
+var App = function() {
+  this.init();
+};
+
+App.prototype.init = function() {
+  this.root = $('#app');
+
+  this.styles = {};
+  this.moods = {};
+
+  this.root.find('.style_selector a').on('click', _.bind(this.styleClick, this));
+  this.root.find('.mood_selector a').on('click', _.bind(this.moodClick, this));
+
+  $('#search').on('click', _.bind(this.search, this));
+
+  this.$player = $('#player');
+  this.$noResults = $('#noResults');
+
+  this.setupPlayer();
+};
+
+App.prototype.playerReady = function() {
+
+};
+
+App.prototype.setupPlayer = function() {
+  var listener = "rdio_callback";
+
+  var params = {
+    'allowScriptAccess': 'always'
+  };
+
+  var attributes = {};
+
+  var domain = document.location.host.split(':')[0]
+
+  var flashvars = {
+    'playbackToken': playback_token, // global
+    'domain': domain,
+    'listener': listener
+  };
+
+  swfobject.embedSWF('http://www.rdio.com/api/swf/', // the location of the Rdio Playback API SWF
+    'apiswf', // the ID of the element that will be replaced with the SWF
+    1, 1, '9.0.0', 'expressInstall.swf', flashvars, params, attributes);
+};
+
+App.prototype.styleClick = function(e) {
+  var el = $(e.target);
+  var sel = el.closest('.style_selector');
+  sel.find('.selected').removeClass('selected');
+  el.addClass('selected');
+  this.styles[sel.data('selector')] = el.data('style');
+  this.debounceSearch();
+  return false;
+};
+
+App.prototype.moodClick = function(e) {
+  var el = $(e.target);
+  var sel = el.closest('.mood_selector');
+  sel.find('.selected').removeClass('selected');
+  el.addClass('selected');
+  this.moods[sel.data('selector')] = el.data('mood');
+  this.debounceSearch();
+  return false;
+};
+
+App.prototype.debounceSearch = function() {
+  var self = this;
+  if (this.timeoutSearch) {
+    window.clearTimeout(this.timeoutSearch);
+  }
+  window.setTimeout(function() {
+    self.search();
+  }, 3000);
+};
+
+App.prototype.search = function() {
+  // construct url from params
+  var data = {};
+
+  _.each(this.styles, function(style, key) {
+    data[key] = style;
+  });
+
+  _.each(this.moods, function(mood, key) {
+    data[key] = mood;
+  });
+
+  console.info('searching for', data);
+
+  $.ajax({
+    url: '/search',
+    data: data,
+    success: _.bind(this.processResults, this)
+  });
+  // etc
+};
+
+App.prototype.processResults = function(result) {
+  var self = this;
+  console.info('results', result);
+
+  if (!_.keys(result.songs).length) {
+    this.$player.hide();
+    this.$noResults.show();
+    return;
+  } else {
+    this.$noResults.hide();
+    this.$player.show();
+  }
+
+  // save songs, trigger play
+  this.songs = result.songs;
+  this.startPlaying();
+};
+
+App.prototype.getPlayer = function() {
+  return $('#apiswf')[0];
+};
+
+App.prototype.startPlaying = function() {
+  if (!this.songs) {
+    return;
+  }
+
+  var keys = _.keys(this.songs);
+
+  if (!keys.length) {
+    return;
+  }
+
+  // shuffle
+  keys = _.shuffle(keys);
+
+  this.play(this.songs[keys[0]]);
+};
+
+App.prototype.play = function(song) {
+  console.info('playing song', song);
+  // update player display
+  this.$player.find('.art img.main').attr('src', song.icon.replace('200', '600'));
+  this.$player.find('.art img.reflection').attr('src', song.icon.replace('200', '600'));
+  // then play
+  this.getPlayer().rdio_play(song.key);
+};
+
+$(document).ready(function() {
+  window.app = new App();
+
+  function log() {
+    if (console && console.log) {
+      console.log.apply(console, arguments);
+    }
+  }
+
+  window.rdio_callback = {
+    ready: function() {
+      log('player ready');
+      rdio.ready();
+    },
+    
+    playStateChanged: function(playState) {
+      // The playback state has changed.
+      // The state can be: 0 - paused, 1 - playing, 2 - stopped, 3 - buffering or 4 - paused.
+      log('playstate changed ' + playState);
+      //$('#playState').text(playState);
+    },
+
+    playingTrackChanged: function(playingTrack, sourcePosition) {
+      // The currently playing track has changed.
+      // Track metadata is provided as playingTrack and the position within the playing source as sourcePosition.
+      log('playingTrackChanged',arguments);
+      if (playingTrack != null) {
+        //$('#track').text(playingTrack['name']);
+        //$('#album').text(playingTrack['album']);
+        //$('#artist').text(playingTrack['artist']);
+        //$('#art').attr('src', playingTrack['icon']);
+      }
+    },
+    playingSourceChanged: function(playingSource) {
+      // The currently playing source changed.
+      // The source metadata, including a track listing is inside playingSource.
+      log('playingSourceChanged',arguments);
+    },
+
+    volumeChanged: function(volume) {
+      // The volume changed to volume, a number between 0 and 1.
+      log('volumeChanged',arguments);
+    },
+
+    muteChanged: function(mute) {
+      // Mute was changed. mute will either be true (for muting enabled) or false (for muting disabled).
+      log('muteChanged',arguments);
+    },
+
+    positionChanged: function(position) {
+      //The position within the track changed to position seconds.
+      // This happens both in response to a seek and during playback.
+      //$('#position').text(position);
+      log('positionChanged',arguments);
+    },
+
+    queueChanged: function(newQueue) {
+      // The queue has changed to newQueue.
+      log('queueChanged',arguments);
+    },
+
+    shuffleChanged: function(shuffle) {
+      // The shuffle mode has changed.
+      // shuffle is a boolean, true for shuffle, false for normal playback order.
+      log('shuffleChanged',arguments);
+    },
+
+    repeatChanged: function(repeatMode) {
+      // The repeat mode change.
+      // repeatMode will be one of: 0: no-repeat, 1: track-repeat or 2: whole-source-repeat.
+      log('repeatChanged',arguments);
+    },
+
+    playingSomewhereElse: function() {
+      // An Rdio user can only play from one location at a time.
+      // If playback begins somewhere else then playback will stop and this callback will be called.
+      log('playingSomewhereElse',arguments);
+    }
+  };
+});
+
+})(jQuery);

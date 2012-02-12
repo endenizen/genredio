@@ -5,15 +5,69 @@
     <title>genredio</title>
     
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" type="text/css" media="screen" charset="utf-8">
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.7.1.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='swfobject.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='underscore-min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+    <script type="text/javascript">
+      var playback_token = "{{ playback_token }}";
+    </script>
   </head>
   <body>
-    Hello world!
     {% if profile %}
-      Logged in as {{ profile['firstName'] }}. <a href="{{ url_for('logout') }}">Logout</a>
+      <div class="logged_in">Logged in as {{ profile['firstName'] }}. <a href="{{ url_for('logout') }}">Logout</a></div>
+      <div id="apiswf"></div>
+      <div id="noresults">
+        Sorry, no results for that wacky combination. Maybe you should record it yourself.
+      </div>
+      <div id="app">
+        <div id="player">
+          <div class="art">
+            <img class="main" />
+            <img class="reflection" />
+          </div>
+          <div class="name"></div>
+          <div class="controls">
+            <a href="#" class="next">Next</a>
+          </div>
+        </div>
+
+        <div class="selectors">
+          <div class="clearfix">
+            {% for selector in ('style1', 'style2') %}
+              <div class="style_selector selector" data-selector="{{ selector }}">
+                <div class="style_header">{{ selector }}</div>
+                <div class="style_inner">
+                  <a href="#" data-style="">(clear)</a>
+                  {% for style in styles %}
+                    {% autoescape off %}
+                      <a href="#" data-style="{{ style.name }}">{{ style.name }}</a>
+                    {% endautoescape %}
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="clearfix">
+            {% for selector in ('mood1', 'mood2') %}
+              <div class="mood_selector selector" data-selector="{{ selector }}">
+                <div class="style_header">{{ selector }}</div>
+                <div class="style_inner">
+                  <a href="#" data-mood="">(clear)</a>
+                  {% for mood in moods %}
+                    {% autoescape off %}
+                      <a href="#" data-mood="{{ mood.name }}">{{ mood.name }}</a>
+                    {% endautoescape %}
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     {% else %}
       <a href="{{ url_for('login') }}">Login with Rdio</a>
-
     {% endif %}
   </body>
 </html>

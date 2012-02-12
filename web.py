@@ -1,8 +1,10 @@
 import os
 
 #import sqlite3
-from flask import Flask, render_template, url_for, redirect, request, session
+from flask import Flask, render_template, url_for, redirect, request, session, jsonify
+from werkzeug.contrib.cache import SimpleCache
 from rdio import Rdio
+from pyechonest import song, artist
 #from pprint import pprint
 
 #DATABASE = 'genredio.db'
@@ -17,13 +19,19 @@ APP_SECRET = os.environ.get('APP_SECRET')
 app = Flask(__name__)
 app.secret_key = APP_SECRET
 
+cache = SimpleCache()
+
 # setup rdio api vars
 rdio_key = os.environ.get('RDIO_API_KEY')
 rdio_secret = os.environ.get('RDIO_API_SECRET')
-#, rdio_state)
+playback_token = None
 
-def get_api():
-  # access token and access token secret
+# echonest data
+styles = artist.list_terms('style')
+moods = artist.list_terms('mood')
+
+def get_rdio_api():
+  """ access token and access token secret """
   token = session.get('at')
   secret = session.get('ats')
   if token and secret:
@@ -32,21 +40,81 @@ def get_api():
     api = Rdio((rdio_key, rdio_secret))
   return api
 
+def get_playback_token():
+  token = cache.get('playback_token')
+  if token:
+    return token
+
+  api = get_rdio_api()
+  result = api.call('getPlaybackToken', { 'domain': request.host.split(':')[0] })
+  playback_token = result['result']
+  cache.set('playback_token', playback_token, 600)
+  return playback_token
+
 @app.route('/')
 def index():
   profile = None
-  api = get_api()
+  api = get_rdio_api()
 
   if api.token:
     user = api.call('currentUser')
     if user.has_key('result'):
       profile = user['result']
 
-  return render_template('index.html', profile=profile)
+  playback_token = get_playback_token()
+
+  return render_template('index.html', profile=profile, styles=styles, moods=moods, playback_token=playback_token)
+
+def echonest_search(styles, moods):
+  cache_key = 'echo_%s_%s' % (styles, moods)
+  app.logger.error('loading key %s' % cache_key)
+  result = cache.get(cache_key)
+  if result:
+    return result
+  app.logger.error('Hey the method is being called')
+  songs = song.search(
+      style=styles,
+      mood=moods,
+      buckets=['id:rdio-us-streaming'],
+      limit=True,
+      results=100)
+  foreign_ids = [s.get_foreign_id('rdio-us-streaming') for s in songs]
+  keys = [str(f.split(':')[-1]) for f in foreign_ids]
+  cache.set(cache_key, keys, 600)
+  return keys
+
+@app.route('/search')
+def search():
+  params = dict([part.split('=') for part in request.query_string.split('&')])
+
+  # grab selected styles
+  styles = []
+  for style in ('style1', 'style2'):
+    if params.has_key(style):
+      # sub + for space instead of url decoding
+      styles.append(params[style].replace('+', ' '))
+
+  moods = []
+  for mood in ('mood1', 'mood2'):
+    if params.has_key(mood):
+      moods.append(params[mood].replace('+', ' '))
+
+  # get rdio keys for songs from echonest
+  keys = echonest_search(styles, moods)
+
+  # get rdio songs from keys
+  api = get_rdio_api()
+  result = api.call('get', {
+    'keys': ','.join(keys),
+    'extras': '-*,key,name,artist,album,icon,shortUrl'
+  })
+  rdio_songs = result['result']
+
+  return jsonify(songs=rdio_songs)
 
 @app.route('/login')
 def login():
-  api = get_api()
+  api = get_rdio_api()
 
   callback_url = request.host_url + url_for('login_callback')[1:]
   url = api.begin_authentication(callback_url)

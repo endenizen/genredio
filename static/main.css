@@ -1,5 +1,131 @@
 body {
-  font-family: georgia;
-  background-color: black;
+  font-family: verdana;
+  background-color: #000;
+  color: gray;
+  overflow: hidden;
+  margin: 0;
+}
+
+a {
   color: white;
+  text-decoration: none;
+}
+
+.clearfix:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+/* Let's get this party started */
+::-webkit-scrollbar {
+    width: 0px;
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background: rgba(50,50,50,0.8); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+::-webkit-scrollbar-thumb:window-inactive {
+	background: rgba(50,50,50,0.4); 
+}
+
+.logged_in {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#noresults {
+  display: none;
+}
+
+.selectors {
+  float: left;
+  width: 45%;
+  margin: 25px 0;
+}
+
+.selector {
+  float: left;
+  width: 50%;
+  margin-bottom: 18px;
+}
+
+.selector .style_header {
+  text-align: center;
+  margin-bottom: 3px;
+  font-variant: small-caps;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  font-size: 29px;
+  -webkit-transform: perspective(1000px) rotateZ(-90deg);
+  position: absolute;
+  margin: 64px 0 0 25px;
+  color: transparent;
+}
+
+.selector .style_inner {
+  overflow-y: auto;
+  height: 41%;
+  margin: 0 85px;
+  border-radius: 137px / 50px;
+  box-shadow: inset 0 0 20px rgba(255, 100, 0, 0.5);
+}
+
+.selector a {
+  text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.9);
+  display: block;
+  font-size: 12px;
+  text-align: center;
+  padding: 2px 0;
+  margin: 2px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+}
+
+.selector a.selected {
+  background-color: rgba(255, 100, 0, 0.5);
+  color: white;
+  font-weight: bold;
+}
+
+#player {
+  width: 50%;
+  display: none;
+  float: right;
+}
+
+#player .art {
+  position: absolute;
+  top: 26%;
+}
+
+#player .art img {
+  display: block;
+  width: 500px;
+  height: 500px;
+  position: relative;
+  left: 137px;
+}
+
+#player .art img.main {
+  -webkit-transform: perspective(1000px) rotateY(-45deg);
+}
+
+#player .art img.reflection {
+  -webkit-transform: perspective(1000px) rotateY(-45deg) rotateX(180deg) skewY(-19.5deg);
+  opacity: .2;
 }
