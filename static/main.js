@@ -15,6 +15,8 @@ App.prototype.init = function() {
 
   this.root.find('.next').on('click', _.bind(this.nextClick, this));
 
+  this.root.find('.add_button').on('click', _.bind(this.addClick, this));
+
   $('#search').on('click', _.bind(this.search, this));
 
   this.$player = $('#player');
@@ -22,11 +24,9 @@ App.prototype.init = function() {
   this.$message = $('.message');
   this.$tracks = $('.tracks');
 
+  this.$playlists = $('.playlists select');
+
   this.setupPlayer();
-};
-
-App.prototype.playerReady = function() {
-
 };
 
 App.prototype.setupPlayer = function() {
@@ -76,15 +76,34 @@ App.prototype.nextClick = function() {
   return false;
 };
 
+App.prototype.addClick = function() {
+  var self = this;
+
+  if (!this.playingTrack) {
+    this.message('No track playing');
+    return;
+  }
+
+  var playlist = this.$playlists.val();
+
+  $.ajax({
+    url: '/add',
+    data: {
+      playlist: playlist,
+      track: this.playingTrack['key']
+    },
+    success: function() {
+      self.message('Added ' + self.playingTrack['name'] + ' to playlist.');
+    }
+  });
+};
+
 App.prototype.debounceSearch = function() {
   var self = this;
   if (this.searchTimeout) {
-    console.info('cleared timeout');
     window.clearTimeout(this.searchTimeout);
   }
-  console.info('setting timeout for debounced search');
   this.searchTimeout = window.setTimeout(function() {
-    console.info('doing debounced search');
     self.search();
   }, 3000);
 };
@@ -101,14 +120,11 @@ App.prototype.search = function() {
     data[key] = mood;
   });
 
-  console.info('searching for', data);
-
   $.ajax({
     url: '/search',
     data: data,
     success: _.bind(this.processResults, this)
   });
-  // etc
 };
 
 App.prototype.message = function(msg) {
@@ -131,13 +147,11 @@ App.prototype.message = function(msg) {
 
 App.prototype.processResults = function(result) {
   var self = this;
-  console.info('results', result);
 
   var keys = _.keys(result.songs);
   var count = keys.length;
 
   if (!count) {
-    this.$player.hide();
     this.message('No results found!');
     return;
   } else {
@@ -156,7 +170,6 @@ App.prototype.processResults = function(result) {
 
   // get the rest ready to queue
   this.toQueue = keys.slice(1);
-  //this.queueIfNeeded();
 };
 
 App.prototype.queueIfNeeded = function() {
@@ -168,7 +181,6 @@ App.prototype.queueIfNeeded = function() {
 };
 
 App.prototype.updateQueueMessage = function(queue) {
-  console.log('updating queue message');
   var msg = '';
   var parts = [];
   if (this.styles['style1']) {
@@ -209,6 +221,8 @@ App.prototype.startPlaying = function() {
 };
 
 App.prototype.updatePlayer = function(song) {
+  this.playingTrack = song;
+
   if (!song) {
     return;
   }
@@ -222,8 +236,6 @@ App.prototype.updatePlayer = function(song) {
 };
 
 App.prototype.play = function(song) {
-  console.info('playing song', song);
-  // then play
   this.getPlayer().rdio_play(song.key);
 };
 
@@ -262,6 +274,7 @@ $(document).ready(function() {
       app.updatePlayer(playingTrack);
       app.queueIfNeeded();
     },
+
     playingSourceChanged: function(playingSource) {
       // The currently playing source changed.
       // The source metadata, including a track listing is inside playingSource.

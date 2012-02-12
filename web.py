@@ -1,24 +1,18 @@
 import os
 
-#import sqlite3
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 from werkzeug.contrib.cache import SimpleCache
 from rdio import Rdio
 from pyechonest import song, artist
-#from pprint import pprint
 
-#DATABASE = 'genredio.db'
-
-# get env vars
-SECRET_KEY = os.environ.get('DB_SECRET')
-USERNAME = os.environ.get('DB_USERNAME')
-PASSWORD = os.environ.get('DB_PASSWORD')
-APP_SECRET = os.environ.get('APP_SECRET')
+# echonest id bucket
+BUCKET = 'rdio-us-streaming'
 
 # setup app
 app = Flask(__name__)
-app.secret_key = APP_SECRET
+app.secret_key = os.environ.get('APP_SECRET')
 
+# setup cache
 cache = SimpleCache()
 
 # setup rdio api vars
@@ -26,12 +20,14 @@ rdio_key = os.environ.get('RDIO_API_KEY')
 rdio_secret = os.environ.get('RDIO_API_SECRET')
 playback_token = None
 
-# echonest data
+# echonest data (will do requests on startup)
+# Note: echonest api key should be setup as env variable
+# and not in this file. Name should be ECHO_NEST_API_KEY
 styles = artist.list_terms('style')
 moods = artist.list_terms('mood')
 
 def get_rdio_api():
-  """ access token and access token secret """
+  """ create user-specific or generic rdio api """
   token = session.get('at')
   secret = session.get('ats')
   if token and secret:
@@ -41,6 +37,7 @@ def get_rdio_api():
   return api
 
 def get_playback_token():
+  """ returns a playback token for the flash player """
   token = cache.get('playback_token')
   if token:
     return token
@@ -51,40 +48,44 @@ def get_playback_token():
   cache.set('playback_token', playback_token, 600)
   return playback_token
 
+def echonest_search(styles, moods):
+  """ performs the search on echonest with the given styles and moods """
+  cache_key = 'echo_%s_%s' % (styles, moods)
+  result = cache.get(cache_key)
+  if result:
+    return result
+  try:
+    songs = song.search(
+        style=styles,
+        mood=moods,
+        buckets=['id:%s' % BUCKET],
+        limit=True,
+        results=100)
+    foreign_ids = [s.get_foreign_id(BUCKET) for s in songs]
+    keys = [str(f.split(':')[-1]) for f in foreign_ids]
+  except:
+    # return empty list if there was an error
+    return []
+  cache.set(cache_key, keys, 600)
+  return keys
+
 @app.route('/')
 def index():
   profile = None
+  playlist_list = None
   api = get_rdio_api()
 
   if api.token:
     user = api.call('currentUser')
     if user.has_key('result'):
       profile = user['result']
+    playlists = api.call('getPlaylists')
+    if playlists.has_key('result'):
+      playlist_list = playlists['result']
 
   playback_token = get_playback_token()
 
-  return render_template('index.html', profile=profile, styles=styles, moods=moods, playback_token=playback_token)
-
-def echonest_search(styles, moods):
-  cache_key = 'echo_%s_%s' % (styles, moods)
-  app.logger.error('loading key %s' % cache_key)
-  result = cache.get(cache_key)
-  if result:
-    return result
-  app.logger.error('Hey the method is being called')
-  try:
-    songs = song.search(
-        style=styles,
-        mood=moods,
-        buckets=['id:rdio-us-streaming'],
-        limit=True,
-        results=100)
-    foreign_ids = [s.get_foreign_id('rdio-us-streaming') for s in songs]
-    keys = [str(f.split(':')[-1]) for f in foreign_ids]
-  except:
-    return []
-  cache.set(cache_key, keys, 600)
-  return keys
+  return render_template('index.html', profile=profile, styles=styles, moods=moods, playback_token=playback_token, playlists=playlist_list)
 
 @app.route('/search')
 def search():
@@ -114,6 +115,21 @@ def search():
   rdio_songs = result['result']
 
   return jsonify(songs=rdio_songs)
+
+@app.route('/add')
+def add():
+  params = dict([part.split('=') for part in request.query_string.split('&')])
+
+  playlist = params['playlist']
+  track = params['track']
+
+  api = get_rdio_api()
+  result = api.call('addToPlaylist', {
+    'playlist': playlist,
+    'tracks': track
+  })
+
+  return jsonify(result=result)
 
 @app.route('/login')
 def login():
@@ -149,6 +165,6 @@ def logout():
   return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    # Bind to PORT if defined, otherwise default to 5000.
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+  # Bind to PORT if defined, otherwise default to 5000.
+  port = int(os.environ.get('PORT', 5000))
+  app.run(host='0.0.0.0', port=port, debug=True)

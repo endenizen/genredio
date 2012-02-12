@@ -48,8 +48,15 @@ a {
   100% { -webkit-transform: rotateY(0deg); }
 }
 
+@-moz-keyframes rotate {
+  0% { -moz-transform: rotateY(0deg); }
+  50% { -moz-transform: rotateY(180deg); }
+  100% { -moz-transform: rotateY(0deg); }
+}
+
 .logo {
   -webkit-animation: rotate 10s infinite linear;
+  -moz-animation: rotate 10s infinite linear;
   font-family: Damion;
   font-size: 80px;
   text-shadow: 2px 2px 0px rgba(100, 30, 0, 0.5);
@@ -66,6 +73,7 @@ a {
 
 .bottom .logo, .bottom .tracks {
   -webkit-animation: none;
+  -moz-animation: none;
   background: rgba(100, 30, 0, 0.5);
   border-radius: 200px 200px 0 0;
   margin: 0 auto;
@@ -95,12 +103,13 @@ a {
 
 .logged_in {
   position: absolute;
-  right: 0;
+  right: 300px;
   top: 0;
-  border-radius: 0 0 0 25px;
+  border-radius: 0 0 25px 25px;
   background-color: rgba(100, 30, 0, 0.5);
   padding: 10px 20px 0 0;
   text-align: right;
+  min-width: 350px;
 }
 
 .logged_in img {

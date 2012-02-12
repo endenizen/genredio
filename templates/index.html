@@ -23,12 +23,22 @@
         <div class="tracks"></div>
         <div class="logo">GenRedio</div>
       </div>
-      <div class="logged_in">
-        <div class="icon"><img src="{{ profile['icon'] }}" /></div>
-        <div>Logged in as <a href="{{ profile['url'] }}" target="_blank">{{ profile['firstName'] }}</a>. <a href="{{ url_for('logout') }}">Logout</a></div>
-      </div>
       <div class="message"></div>
       <div id="app">
+        <div class="logged_in">
+          <div class="icon"><img src="{{ profile['icon'] }}" /></div>
+          <div>
+            Logged in as <a href="{{ profile['url'] }}" target="_blank">{{ profile['firstName'] }}</a>. <a href="{{ url_for('logout') }}">Logout</a>
+            <div class="playlists">
+              <select name="playlists" class="playlists">
+                {% for playlist in playlists['owned'] %}
+                  <option value="{{ playlist['key'] }}">{{ playlist['name'] }}</option>
+                {% endfor %}
+              </select>
+              <input type="button" value="Add" class="add_button" />
+            </div>
+          </div>
+        </div>
         <div id="player">
           <div class="art">
             <img class="main" />
