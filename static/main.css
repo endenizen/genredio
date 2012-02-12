@@ -1,5 +1,5 @@
 body {
-  font-family: verdana;
+  font-family: Exo;
   background-color: #000;
   color: gray;
   overflow: hidden;
@@ -21,31 +21,84 @@ a {
 
 /* Let's get this party started */
 ::-webkit-scrollbar {
-    width: 0px;
+  width: 0px; /* and now all the rest is pretty much useless :) */
 }
  
 /* Track */
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
 }
  
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    background: rgba(50,50,50,0.8); 
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  background: rgba(50,50,50,0.8); 
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
 }
 ::-webkit-scrollbar-thumb:window-inactive {
 	background: rgba(50,50,50,0.4); 
+}
+
+@-webkit-keyframes rotate {
+  0% { -webkit-transform: rotateY(0deg); }
+  50% { -webkit-transform: rotateY(180deg); }
+  100% { -webkit-transform: rotateY(0deg); }
+}
+
+.logo {
+  -webkit-animation: rotate 10s infinite linear;
+  font-family: Damion;
+  font-size: 80px;
+  text-shadow: 2px 2px 0px rgba(100, 30, 0, 0.5);
+  color: rgba(100, 30, 0, 0.9);
+}
+
+.bottom {
+  margin: 0 auto;
+  bottom: 0px;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
+}
+
+.bottom .logo {
+  -webkit-animation: none;
+  background: rgba(100, 30, 0, 0.5);
+  border-radius: 200px 200px 0 0;
+  margin: 0 auto;
+  width: 300px;
+  text-align: center;
+  font-size: 60px;
+  border-width: 2px 2px 0 2px;
+  border-color: rgba(100, 30, 0, 0.5);
+  border-style: solid;
+  box-shadow: inset 0 3px 3px black;
+}
+
+.login {
+  font-variant: small-caps;
+  color: transparent;
+  text-shadow: 0 0 2px white;
 }
 
 .logged_in {
   position: absolute;
   right: 0;
   top: 0;
+  border-radius: 0 0 0 25px;
+  background-color: rgba(100, 30, 0, 0.5);
+  padding: 10px 20px 0 0;
+  text-align: right;
+}
+
+.logged_in img {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  float: left;
 }
 
 #noresults {
@@ -71,6 +124,7 @@ a {
   text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
   font-size: 29px;
   -webkit-transform: perspective(1000px) rotateZ(-90deg);
+  -moz-transform: perspective(1000px) rotateZ(-90deg);
   position: absolute;
   margin: 64px 0 0 25px;
   color: transparent;
@@ -106,26 +160,48 @@ a {
   width: 50%;
   display: none;
   float: right;
+  margin-top: 77px;
 }
 
 #player .art {
-  position: absolute;
-  top: 26%;
+  height: 500px;
+  -webkit-transform: perspective(1000px) rotateY(-25deg);
+  -moz-transform: perspective(1000px) rotateY(-25deg);
 }
 
 #player .art img {
   display: block;
-  width: 500px;
-  height: 500px;
-  position: relative;
-  left: 137px;
+  height: 80%;
 }
 
 #player .art img.main {
-  -webkit-transform: perspective(1000px) rotateY(-45deg);
 }
 
 #player .art img.reflection {
-  -webkit-transform: perspective(1000px) rotateY(-45deg) rotateX(180deg) skewY(-19.5deg);
+  -webkit-transform: perspective(1000px) rotateX(180deg);
+  -moz-transform: perspective(1000px) rotateX(180deg);
   opacity: .2;
+}
+
+#player .metadata {
+  position: absolute;
+  bottom: 0;
+  font-size: 23px;
+  line-height: 42px;
+  left: -56px;
+}
+
+.message {
+  display: none;
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  padding: 10px 20px;
+  font-size: 20px;
+  background: rgba(255,100,0,0.5);
+  border-radius: 50px;
+  color: transparent;
+  text-shadow: 0 0 2px white;
+  box-shadow: 0 0 21px rgba(255,50,0,0.8);
+  font-weight: bold;
 }
