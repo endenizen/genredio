@@ -165,11 +165,13 @@ App.prototype.processResults = function(result) {
   this.message('Found ' + count + ' songs');
 
   // save songs, trigger play
-  this.songs = result.songs;
-  this.startPlaying();
+  this.songs = _.shuffle(keys);
+
+  // play first song
+  this.getPlayer().rdio_play(this.songs[0]);
 
   // get the rest ready to queue
-  this.toQueue = keys.slice(1);
+  this.toQueue = this.songs.slice(1);
 };
 
 App.prototype.queueIfNeeded = function() {
@@ -203,23 +205,6 @@ App.prototype.getPlayer = function() {
   return $('#apiswf')[0];
 };
 
-App.prototype.startPlaying = function() {
-  if (!this.songs) {
-    return;
-  }
-
-  var keys = _.keys(this.songs);
-
-  if (!keys.length) {
-    return;
-  }
-
-  // shuffle
-  keys = _.shuffle(keys);
-
-  this.play(this.songs[keys[0]]);
-};
-
 App.prototype.updatePlayer = function(song) {
   this.playingTrack = song;
 
@@ -233,10 +218,6 @@ App.prototype.updatePlayer = function(song) {
   this.$player.find('.artist').text(song.artist).attr('href', song.artistUrl);
   this.$player.find('.album').text(song.album).attr('href', song.albumUrl);
   this.$player.find('.song').text(song.name).attr('href', song.url);
-};
-
-App.prototype.play = function(song) {
-  this.getPlayer().rdio_play(song.key);
 };
 
 $(document).ready(function() {
