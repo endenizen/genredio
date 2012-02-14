@@ -1,4 +1,4 @@
-import os
+import os, urllib2
 
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 from werkzeug.contrib.cache import SimpleCache
@@ -91,17 +91,20 @@ def index():
 def search():
   params = dict([part.split('=') for part in request.query_string.split('&')])
 
+  def clean_style(style):
+    # clean url-encoded styles: 'big+band' 'r%26b'
+    return urllib2.unquote(style).replace('+', ' ')
+
   # grab selected styles
   styles = []
   for style in ('style1', 'style2'):
     if params.has_key(style):
-      # sub + for space instead of url decoding
-      styles.append(params[style].replace('+', ' '))
+      styles.append(clean_style(params[style]))
 
   moods = []
   for mood in ('mood1', 'mood2'):
     if params.has_key(mood):
-      moods.append(params[mood].replace('+', ' '))
+      moods.append(clean_style(params[mood]))
 
   # get rdio keys for songs from echonest
   keys = echonest_search(styles, moods)
