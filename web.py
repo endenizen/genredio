@@ -6,7 +6,7 @@ from rdio import Rdio
 from pyechonest import song, artist
 
 # echonest id bucket
-BUCKET = 'rdio-us-streaming'
+BUCKET = 'rdio-US'
 
 # setup app
 app = Flask(__name__)
@@ -58,10 +58,13 @@ def echonest_search(styles, moods):
     songs = song.search(
         style=styles,
         mood=moods,
-        buckets=['id:%s' % BUCKET],
+        buckets=['id:%s' % BUCKET, 'tracks'],
         limit=True,
         results=100)
-    foreign_ids = [s.get_foreign_id(BUCKET) for s in songs]
+    # Stopped working with rdio-US bucket change
+    # TODO: switch back when it starts working again
+    #foreign_ids = [s.get_foreign_id(BUCKET) for s in songs]
+    foreign_ids = [s.cache['tracks'][0]['foreign_id'] for s in songs]
     keys = [str(f.split(':')[-1]) for f in foreign_ids]
   except:
     # return empty list if there was an error
